@@ -1,0 +1,60 @@
+@use "_variables" as var;
+
+.energy-card {
+
+    &__title {
+        color: var.$primary-text;
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+
+    &__content {
+        background: var.$primary-white;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    &__left {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__consumption {
+        font-size: 28px;
+    }
+
+    &__consumption-kwh{
+        font-size: 12px;
+        color: var.$primary-dark-grey;
+    }
+
+    &__comparison {
+        font-size: 13px;
+        color: var.$green;
+    }
+
+    &__right {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    &__date {
+        font-size: 20px;
+        color: var.$primary-dark-grey;
+    }
+
+    &__button {
+        background: var.$primary-blue;
+        color: var.$primary-text;
+        padding: 7px;
+        border-radius: 9px;
+        border: none;
+    }
+}

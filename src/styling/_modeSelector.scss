@@ -1,0 +1,6 @@
+@use "variables" as var;
+
+.active{
+    background: var.$primary-blue;
+    color: var.$primary-white;
+}

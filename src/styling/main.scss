@@ -1,4 +1,15 @@
-// src/styles/main.scss
+@use "_smartSection.scss";
+
+@use "_header.scss";
+
+@use "_energyCard.scss";
+
+@use "_roomTabs.scss";
+
+@use "_modeSelector.scss";
+
+@use "_variables.scss" as var;
+
 
 :root {
   --primary: #0066ff;
@@ -19,8 +30,8 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
+  background: var.$primary-background;
+  color: var.$primary-text;
   min-height: 100vh;
 }
 
