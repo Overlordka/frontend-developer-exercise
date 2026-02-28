@@ -1,29 +1,41 @@
+import { useState } from 'react';
 
 export default function ModeSelector() {
-  const modes = [
-    { icon: '🏠', label: 'Hjem', active: true },
-    { icon: '🏠', label: 'Ude' }, 
-    { icon: '😴', label: 'Sover' },
-  ];
+  const [activeMode, setActiveMode] = useState(null);
+
+  const handleModeClick = (mode) => {
+    setActiveMode(mode);
+  };
 
   return (
-    <div style={{ display: 'flex', gap: '8px', marginBottom: '28px' }}>
-      {modes.map((mode) => (
-        <button
-          key={mode.label}
-          style={{
-            flex: 1,
-            padding: '12px',
-            border: `1px solid ${mode.active ? 'var(--primary)' : 'var(--border)'}`,
-            borderRadius: '12px',
-            background: mode.active ? 'rgba(0,102,255,0.08)' : 'white',
-            fontWeight: mode.active ? 600 : 400,
-          }}
-        >
-          <div style={{ fontSize: '24px', marginBottom: '4px' }}>{mode.icon}</div>
-          <div>{mode.label}</div>
-        </button>
-      ))}
+    <div className="room-tabs">
+      <div className="room-tabs__header">
+        <h2 className="room-tabs__title">Forudindstillet</h2>
+      </div>
+
+      <div className="room-tabs__list">
+          <button 
+            className={`room-tabs__button ${activeMode === 'home' ? 'active' : ''}`}
+            onClick={() => handleModeClick('home')}
+          >
+            <img src={`../public/icons/icon_home_${activeMode === 'home' ? 'on' : 'off'}.png`} alt="bedroom" />
+            Hjemme
+          </button>
+          <button 
+            className={`room-tabs__button ${activeMode === 'away' ? 'active' : ''}`}
+            onClick={() => handleModeClick('away')}
+          >
+            <img src={`../public/icons/icon_away_${activeMode === 'away' ? 'on' : 'off'}.png`} alt="bedroom" />
+            Ude
+          </button>
+          <button 
+            className={`room-tabs__button ${activeMode === 'sleep' ? 'active' : ''}`}
+            onClick={() => handleModeClick('sleep')}
+          >
+            <img src={`../public/icons/icon_sleep_${activeMode === 'sleep' ? 'on' : 'off'}.png`} alt="bedroom" />
+            Sover
+          </button>
+      </div>
     </div>
   );
 }

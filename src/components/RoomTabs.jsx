@@ -1,33 +1,32 @@
 
 export default function RoomTabs() {
-  const rooms = ['Soveværelse', 'Stue', 'Badeværelse'];
 
   return (
-    <div style={{ marginBottom: '24px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <h2 style={{ fontSize: '18px' }}>Rum</h2>
-        <button style={{ color: 'var(--primary)', background: 'none', border: 'none', fontSize: '14px' }}>
-          Vis alle ↓
+    <div className="room-tabs">
+      <div className="room-tabs__header">
+        <h2 className="room-tabs__title">Rum</h2>
+        <button className="room-tabs__see-all">
+          Vis alle <img src="../public/icons/icon_drop-down.png" alt="" />
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }}>
-        {rooms.map((room) => (
-          <button
-            key={room}
-            style={{
-              padding: '10px 18px',
-              borderRadius: '999px',
-              border: '1px solid var(--border)',
-              background: room === 'Stue' ? 'var(--primary)' : 'white',
-              color: room === 'Stue' ? 'white' : 'var(--text)',
-              whiteSpace: 'nowrap',
-              fontSize: '14px',
-            }}
-          >
-            {room}
+      <div className="room-tabs__list">
+          <button className="room-tabs__button">
+            <img src="../public/icons/icon_bedroom.png" alt="bedroom" />
+            Soveværelse
           </button>
-        ))}
+          <button className="room-tabs__button">
+            <img src="../public/icons/icon_living-room.png" alt="living-room" />
+            Stue
+          </button>
+          <button className="room-tabs__button">
+            <img src="../public/icons/icon_bathroom.png" alt="bathroom" />
+            Badeværelse
+          </button>
+          <button className="room-tabs__button">
+            <img src="../public/icons/icon_kitchen.png" alt="kitchen" />
+            Køkken
+          </button>
       </div>
     </div>
   );

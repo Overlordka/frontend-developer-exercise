@@ -3,7 +3,7 @@ import ControlCard from './ControlCard';
 
 export default function SmartSection() {
   return (
-    <div>
+    <div className='smart-settings'>
       <h2 style={{ fontSize: '18px', marginBottom: '16px' }}>Smart indstillinger</h2>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
