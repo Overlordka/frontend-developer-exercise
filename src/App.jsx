@@ -1,19 +1,16 @@
 import './styling/main.scss';
-import Header from './components/Header';
-import EnergyCard from './components/EnergyCard';
-import RoomTabs from './components/RoomTabs';
-import ModeSelector from './components/ModeSelector';
-import SmartSection from './components/SmartSection';
+import { Routes, Route } from 'react-router-dom';
+import StarterPage from './pages/starterPage';
+import StatistikPage from './pages/statistikPage';
 import BottomNav from './components/BottomNav';
 
 function App() {
   return (
     <div className="container">
-      <Header />
-      <EnergyCard />
-      <RoomTabs />
-      <ModeSelector />
-      <SmartSection />
+      <Routes>
+        <Route path="/" element={<StarterPage />} />
+        <Route path="/statistics" element={<StatistikPage />} />
+      </Routes>
       <BottomNav />
     </div>
   );
