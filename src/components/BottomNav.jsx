@@ -1,23 +1,11 @@
 
 export default function BottomNav() {
   return (
-    <nav
-      style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: 'white',
-        borderTop: '1px solid var(--border)',
-        display: 'flex',
-        justifyContent: 'space-around',
-        padding: '12px 0',
-        boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
-      }}
-    >
-      <button style={{ background: 'none', border: 'none', fontSize: '24px' }}>🏠</button>
-      <button style={{ background: 'none', border: 'none', fontSize: '24px' }}>≈</button>
-      <button style={{ background: 'none', border: 'none', fontSize: '24px' }}>💡</button>
+    <nav className="bottom-nav">
+      <button className="bottom-nav__button"><img src="../public/icons/icon_menu_dashboad_active.png" alt="dashboard" /></button>
+      <button className="bottom-nav__button"><img src="../public/icons/icon_menu_statistics_inactive.png" alt="dashboard" /></button>
+      <button className="bottom-nav__button"><img src="../public/icons/icon_menu_heating.png" alt="dashboard" /></button>
+      <button className="bottom-nav__button"><img src="../public/icons/icon_menu_light.png" alt="dashboard" /></button>
     </nav>
   );
 }

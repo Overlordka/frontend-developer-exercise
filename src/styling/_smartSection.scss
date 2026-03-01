@@ -1,3 +1,21 @@
-.smart-settings{
-    margin-bottom: 70px;
+.smart-settings {
+  margin-bottom: 70px;
+
+  &__container {
+    max-height: 325px;
+    overflow-y: auto;
+  }
+
+
+  &__title {
+    font-size: 16px;
+    font-weight: 400;
+    margin-bottom: 16px;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
 }

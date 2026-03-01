@@ -1,47 +1,16 @@
 
-export default function ControlCard({ title, items, hasSettingsButton = false }) {
+export default function ControlCard({ title, items, title2, items2, temp, indstillinger = [] }) {
   return (
-    <div
-      style={{
-        background: 'white',
-        borderRadius: '12px',
-        padding: '16px',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <h3 style={{ fontSize: '16px' }}>{title}</h3>
-        {hasSettingsButton && (
-          <button
-            style={{
-              background: 'var(--primary)',
-              color: 'white',
-              border: 'none',
-              padding: '6px 12px',
-              borderRadius: '8px',
-              fontSize: '13px',
-            }}
-          >
-            Indstillinger
-          </button>
-        )}
+    <div className="control-card">
+      <div className="control-card__header">
+        <h3 className="control-card__title">{title}</h3>
       </div>
 
       {items.map((item) => (
-        <div
-          key={item.name}
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '10px 0',
-            borderTop: '1px solid var(--border)',
-          }}
-        >
-          <span style={{ fontSize: '15px' }}>{item.name}</span>
+        <div key={item.name} className="control-card__item">
+          <span className="control-card__item-name">{item.name}</span>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {item.temp && <span style={{ color: 'var(--text-light)', fontSize: '14px' }}>{item.temp}</span>}
+          <div className="control-card__item-controls">
             <label className="switch">
               <input type="checkbox" defaultChecked={item.on} />
               <span className="slider round"></span>
@@ -50,47 +19,38 @@ export default function ControlCard({ title, items, hasSettingsButton = false })
         </div>
       ))}
 
-      <style>{`
-        .switch {
-          position: relative;
-          display: inline-block;
-          width: 44px;
-          height: 24px;
-        }
-        .switch input {
-          opacity: 0;
-          width: 0;
-          height: 0;
-        }
-        .slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: #ccc;
-          transition: .4s;
-          border-radius: 24px;
-        }
-        .slider:before {
-          position: absolute;
-          content: "";
-          height: 20px;
-          width: 20px;
-          left: 2px;
-          bottom: 2px;
-          background-color: white;
-          transition: .4s;
-          border-radius: 50%;
-        }
-        input:checked + .slider {
-          background-color: #0066ff;
-        }
-        input:checked + .slider:before {
-          transform: translateX(20px);
-        }
-      `}</style>
+      {title2 && items2.length > 0 && (
+        <>
+          <div className="control-card__header">
+            <h3 className="control-card__title">{title2}</h3>
+          </div>
+          {items2.map((item2) => (
+            <div key={item2.name} className="control-card__item">
+              <span className="control-card__item-name">{item2.name}</span>
+
+              <div className="control-card__item-controls">
+                <label className="switch">
+                  <input type="checkbox" defaultChecked={item2.on} />
+                  <span className="slider round"></span>
+                </label>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {temp && indstillinger && (
+        <div className="control-card__settings-section">
+          <div className="control-card__temp">
+            <img src="../public/icons/icon_temp.png" alt="temperature" />
+            <span>{temp}</span>
+          </div>
+          <button className="control-card__settings-btn">
+            <img src="../public/icons/icon_temp-setting.png" alt="settings" />
+            Indstillinger
+          </button>
+        </div>
+      )}
     </div>
   );
 }
