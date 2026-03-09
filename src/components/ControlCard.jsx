@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-export default function ControlCard({ title, items, title2, items2, temp, indstillinger = [] }) {
+export default function ControlCard({ title, items, title2, items2, temp, mode, indstillinger = [] }) {
   const navigate = useNavigate();
 
   return (
@@ -42,11 +42,14 @@ export default function ControlCard({ title, items, title2, items2, temp, indsti
         </>
       )}
 
-      {temp && indstillinger && (
+      {temp && mode && indstillinger && (
         <div className="control-card__settings-section">
           <div className="control-card__temp">
             <img src="../public/icons/icon_temp.png" alt="temperature" />
-            <span>{temp}</span>
+            <div className="control-card__temp-info">
+              <span>{temp}</span>
+              <span className="control-card__mode">{mode}</span>
+            </div>
           </div>
           <button className="control-card__settings-btn" onClick={() => navigate('/indstillinger')}>
             <img src="../public/icons/icon_temp-setting.png" alt="settings" />

@@ -67,6 +67,16 @@
     font-size: 16px;
     color: var.$primary-text;
   }
+
+    &__temp-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+  &__mode {
+    font-size: 12px;
+    color: var.$primary-dark-grey;
+  }
 }
 
 .switch {
@@ -83,7 +93,6 @@
 
   .slider {
     position: absolute;
-    cursor: pointer;
     top: 0;
     left: 0;
     right: 0;

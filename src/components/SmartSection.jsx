@@ -5,12 +5,18 @@ import { fetchDevices } from '../scripts/fetch.js';
 
 export default function SmartSection() {
   const [livingRoomTemp, setLivingRoomTemp] = useState('...');
+  const [livingRoomMode, setLivingRoomMode] = useState('...');
 
   useEffect(() => {
     const loadDevices = async () => {
       const devices = await fetchDevices();
       const currentTemp = Math.round(devices[0].current_temp) + "°C";
+      const modeName = devices[0].work_mode.charAt(0).toUpperCase() + devices[0].work_mode.slice(1);
+      const currentMode = modeName + " - mode";
+
+
       setLivingRoomTemp(currentTemp);
+      setLivingRoomMode(currentMode);
     };
 
     loadDevices();
@@ -40,6 +46,7 @@ export default function SmartSection() {
               { name: 'Fan Coil', on: true },
             ]}
             temp={livingRoomTemp}
+            mode={livingRoomMode}
           />
 
           <ControlCard
