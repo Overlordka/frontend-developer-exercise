@@ -8,9 +8,25 @@ export default function ConfigIndst() {
   const [name, setName] = useState('');
   const [temperature, setTemperature] = useState(0);
   const [indoorTemp, setIndoorTemp] = useState(0);
-  const [ventilationLevel, setVentilationLevel] = useState(3);
-  const [mode, setMode] = useState('manual');
+  const [ventilationLevel, setVentilationLevel] = useState(0);
+  const [mode, setMode] = useState('off');
   const [isPowerOn, setIsPowerOn] = useState(true);
+
+  const mapApiModeToUi = (apiMode) => {
+    if (apiMode === 'schedule' || apiMode === 'scheduled') {
+      return 'tidsplan';
+    }
+
+    return apiMode;
+  };
+
+  const mapUiModeToApi = (uiMode) => {
+    if (uiMode === 'tidsplan') {
+      return 'schedule';
+    }
+
+    return uiMode;
+  };
 
   useEffect(() => {
     const loadDevices = async () => {
@@ -28,7 +44,7 @@ export default function ConfigIndst() {
       setName(name);
       setIndoorTemp(currentTemp);
       setTemperature(targetTemp);
-      setMode(currentMode);
+      setMode(mapApiModeToUi(currentMode));
       setVentilationLevel(ventLevel);
     };
 
@@ -43,7 +59,8 @@ export default function ConfigIndst() {
   };
 
   const handleVentilationChange = (e) => {
-    setVentilationLevel(parseInt(e.target.value));
+    const nextLevel = clamp(Number(e.target.value), 0, 5);
+    updateVentilation(nextLevel);
   };
 
   const updateThermostat = async (nextTemp) => {
@@ -51,8 +68,6 @@ export default function ConfigIndst() {
       try {
         await updateDevice(deviceId, {
           target_temp: nextTemp,
-          vent_level: ventilationLevel,
-          work_mode: mode,
         });
       } catch (error) {
         console.error('Failed to update thermostat:', error);
@@ -60,6 +75,36 @@ export default function ConfigIndst() {
     }
 
     setTemperature(nextTemp);
+  };
+
+  const updateVentilation = async (nextLevel) => {
+    if (deviceId) {
+      try {
+        await updateDevice(deviceId, {
+          vent_level: nextLevel,
+        });
+      } catch (error) {
+        console.error('Failed to update ventilator:', error);
+      }
+    }
+
+    setVentilationLevel(nextLevel);
+  };
+
+  const updateMode = async (nextMode) => {
+    const apiMode = mapUiModeToApi(nextMode);
+
+    if (deviceId) {
+      try {
+        await updateDevice(deviceId, {
+          work_mode: nextMode,
+        });
+      } catch (error) {
+        console.error('Failed to update mode:', error);
+      }
+    }
+
+    setMode(nextMode);
   };
 
   return (
@@ -147,21 +192,21 @@ export default function ConfigIndst() {
         <div className="config-indst__modes">
           <button
             className={`config-indst__mode-btn ${mode === 'manual' ? 'active' : ''}`}
-            onClick={() => setMode('manual')}
+            onClick={() => updateMode('manual')}
           >
             <img src={`../public/icons/icon_manual_${mode === 'manual' ? 'on' : 'off'}.png`} alt="manual" />
             Manual
           </button>
           <button
-            className={`config-indst__mode-btn ${mode === 'tidsplan' ? 'active' : ''}`}
-            onClick={() => setMode('tidsplan')}
+            className={`config-indst__mode-btn ${mode === 'timed' ? 'active' : ''}`}
+            onClick={() => updateMode('timed')}
           >
-            <img src={`../public/icons/icon_schedule_${mode === 'tidsplan' ? 'on' : 'off'}.png`} alt="tidsplan" />
+            <img src={`../public/icons/icon_schedule_${mode === 'timed' ? 'on' : 'off'}.png`} alt="timed" />
             Tidsplan
           </button>
           <button
             className={`config-indst__mode-btn ${mode === 'boost' ? 'active' : ''}`}
-            onClick={() => setMode('boost')}
+            onClick={() => updateMode('boost')}
           >
             <img src={`../public/icons/icon_boost_${mode === 'boost' ? 'on' : 'off'}.png`} alt="boost" />
             Boost
