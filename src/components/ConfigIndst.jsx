@@ -1,132 +1,72 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchDevices } from '../scripts/fetch.js';
-import { updateDevice } from '../scripts/post.js';
+import { updateDevice } from '../scripts/put.js';
 
 
 export default function ConfigIndst() {
   const [deviceId, setDeviceId] = useState(null);
+  const [name, setName] = useState('');
   const [temperature, setTemperature] = useState(0);
   const [indoorTemp, setIndoorTemp] = useState(0);
   const [ventilationLevel, setVentilationLevel] = useState(3);
   const [mode, setMode] = useState('manual');
   const [isPowerOn, setIsPowerOn] = useState(true);
-  const [powerFieldName, setPowerFieldName] = useState('');
-  const [lastSavedPayload, setLastSavedPayload] = useState(null);
-  const syncTimerRef = useRef(null);
 
   useEffect(() => {
-    let isMounted = true;
-
     const loadDevices = async () => {
-      try {
-        const devices = await fetchDevices();
-        const device = devices?.[0];
+      const devices = await fetchDevices();
+      const device = devices[0];
 
-        if (!device || !isMounted) {
-          return;
-        }
+      const name = device.name;
+      const targetTemp = Math.round(device.target_temp);
+      const currentTemp = Math.round(device.current_temp);
+      const currentMode = device.work_mode;
+      const ventLevel = device.vent_level;
 
-        const resolvedDeviceId = device.id ?? device.device_id ?? null;
-        const targetTemp = Math.round(Number(device.target_temp ?? 0));
-        const currentTemp = Math.round(Number(device.current_temp ?? 0));
-        const currentMode = typeof device.work_mode === 'string' ? device.work_mode : 'manual';
-        const ventLevel = Math.round(Number(device.vent_level ?? 0));
+      setDeviceId(device.id);
 
-        let detectedPowerField = '';
-        let detectedPowerValue = true;
-
-        if (typeof device.is_on === 'boolean') {
-          detectedPowerField = 'is_on';
-          detectedPowerValue = device.is_on;
-        } else if (typeof device.power === 'boolean') {
-          detectedPowerField = 'power';
-          detectedPowerValue = device.power;
-        } else if (typeof device.is_power_on === 'boolean') {
-          detectedPowerField = 'is_power_on';
-          detectedPowerValue = device.is_power_on;
-        }
-
-        const initialPayload = {
-          target_temp: targetTemp,
-          vent_level: ventLevel,
-          work_mode: currentMode,
-          ...(detectedPowerField ? { [detectedPowerField]: detectedPowerValue } : {}),
-        };
-
-        setDeviceId(resolvedDeviceId);
-        setIndoorTemp(currentTemp);
-        setTemperature(targetTemp);
-        setMode(currentMode);
-        setVentilationLevel(ventLevel);
-        setIsPowerOn(detectedPowerValue);
-        setPowerFieldName(detectedPowerField);
-        setLastSavedPayload(initialPayload);
-      } catch (error) {
-        console.error('Failed to load devices:', error);
-      }
+      setName(name);
+      setIndoorTemp(currentTemp);
+      setTemperature(targetTemp);
+      setMode(currentMode);
+      setVentilationLevel(ventLevel);
     };
 
     loadDevices();
-
-    return () => {
-      isMounted = false;
-      if (syncTimerRef.current) {
-        clearTimeout(syncTimerRef.current);
-      }
-    };
   }, []);
-
-  useEffect(() => {
-    if (!deviceId || !lastSavedPayload) {
-      return;
-    }
-
-    const nextPayload = {
-      target_temp: temperature,
-      vent_level: ventilationLevel,
-      work_mode: mode,
-      ...(powerFieldName ? { [powerFieldName]: isPowerOn } : {}),
-    };
-
-    if (JSON.stringify(nextPayload) === JSON.stringify(lastSavedPayload)) {
-      return;
-    }
-
-    if (syncTimerRef.current) {
-      clearTimeout(syncTimerRef.current);
-    }
-
-    syncTimerRef.current = setTimeout(async () => {
-      try {
-        await updateDevice(deviceId, nextPayload);
-        setLastSavedPayload(nextPayload);
-      } catch (error) {
-        console.error('Failed to update device:', error);
-      }
-    }, 350);
-
-    return () => {
-      if (syncTimerRef.current) {
-        clearTimeout(syncTimerRef.current);
-      }
-    };
-  }, [deviceId, isPowerOn, lastSavedPayload, mode, powerFieldName, temperature, ventilationLevel]);
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
   const handleTempChange = (e) => {
-    setTemperature(clamp(Number(e.target.value), 10, 30));
+    const nextTemp = clamp(Number(e.target.value), 10, 30);
+    updateThermostat(nextTemp);
   };
 
   const handleVentilationChange = (e) => {
-    setVentilationLevel(clamp(Number(e.target.value), 0, 5));
+    setVentilationLevel(parseInt(e.target.value));
+  };
+
+  const updateThermostat = async (nextTemp) => {
+    if (deviceId) {
+      try {
+        await updateDevice(deviceId, {
+          target_temp: nextTemp,
+          vent_level: ventilationLevel,
+          work_mode: mode,
+        });
+      } catch (error) {
+        console.error('Failed to update thermostat:', error);
+      }
+    }
+
+    setTemperature(nextTemp);
   };
 
   return (
     <div className="config-indst">
       {/* Thermostat Section */}
       <div className="config-indst__section">
-        <h3 className="config-indst__title">Stue</h3>
+        <h3 className="config-indst__title">{name}</h3>
         
         <div className="config-indst__thermostat">
           <div className="config-indst__thermostat-display">
@@ -137,7 +77,7 @@ export default function ConfigIndst() {
           <div className="config-indst__thermostat-controls">
             <button 
               className="config-indst__temp-btn"
-              onClick={() => setTemperature(Math.max(10, temperature - 1))}
+              onClick={() => updateThermostat(clamp(temperature - 1, 10, 30))}
             >
               −
             </button>
@@ -151,7 +91,7 @@ export default function ConfigIndst() {
             />
             <button 
               className="config-indst__temp-btn"
-              onClick={() => setTemperature(Math.min(30, temperature + 1))}
+              onClick={() => updateThermostat(clamp(temperature + 1, 10, 30))}
             >
               +
             </button>

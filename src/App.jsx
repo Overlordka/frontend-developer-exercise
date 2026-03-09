@@ -1,5 +1,4 @@
 import './styling/main.scss';
-import './scripts/fetch.js';
 import { Routes, Route } from 'react-router-dom';
 import StarterPage from './pages/starterPage';
 import StatistikPage from './pages/statistikPage';
