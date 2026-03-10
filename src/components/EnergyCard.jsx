@@ -1,4 +1,9 @@
+import { useNavigate } from "react-router-dom";
+
 export default function EnergyCard() {
+
+  const navigate = useNavigate();
+
   return (
     <div className="energy-card">
       <div className="energy-card__title">
@@ -7,7 +12,7 @@ export default function EnergyCard() {
 
       <div className="energy-card__content">
         <div className="energy-card__right">
-          <button className="energy-card__button">
+          <button className="energy-card__button" onClick={() => navigate("/statistics")}>
             <img src="../public/icons/icon_consumption_on.png" alt="consumption" />
           </button>
           <div className="energy-card__date">21 jan 2026</div>

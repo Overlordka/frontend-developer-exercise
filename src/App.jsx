@@ -1,11 +1,17 @@
 import './styling/main.scss';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import StarterPage from './pages/starterPage';
 import StatistikPage from './pages/statistikPage';
 import IndstillingerPage from './pages/indstillingerPage';
 import BottomNav from './components/BottomNav';
+import { fetchCurrentEnergyConsumption } from './scripts/fetch.js';
 
 function App() {
+  const location = useLocation();
+  const shouldShowBottomNav = !location.pathname.startsWith('/indstillinger');
+
+  fetchCurrentEnergyConsumption();
+
   return (
     <div className="container">
       <Routes>
@@ -13,7 +19,7 @@ function App() {
         <Route path="/statistics" element={<StatistikPage />} />
         <Route path="/indstillinger" element={<IndstillingerPage />} />
       </Routes>
-      <BottomNav />
+      {shouldShowBottomNav && <BottomNav />}
     </div>
   );
 }
