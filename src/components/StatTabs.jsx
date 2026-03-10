@@ -1,39 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Dot } from 'recharts';
+import { getWeeklyEnergyConsumption } from '../scripts/fetch.js';
 
-const weekData = [
-    { day: 'Man', value: 25.2, kwh: 32.8, cost: 89.56 },
-    { day: 'Tir', value: 28.5, kwh: 36.0, cost: 99.32 },
-    { day: 'Ons', value: 29.3, kwh: 29.3, cost: 81.04 },
-    { day: 'Tor', value: 22.8, kwh: 24.5, cost: 71.20 },
-    { day: 'Fre', value: 26.1, kwh: 28.9, cost: 85.40 },
-    { day: 'Lør', value: 24.5, kwh: 26.7, cost: 79.10 },
-    { day: 'Søn', value: 23.0, kwh: 25.2, cost: 73.80 },
-];
+const dayNames = ['Søn', 'Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør'];
+const weekOrder = ['Man', 'Tir', 'Ons', 'Tor', 'Fre', 'Lør', 'Søn'];
 
-const CustomDot = (props) => {
-    const { cx, cy, index } = props;
-    if (index === 2) {
-        return (
-            <g>
-                <circle cx={cx} cy={cy} r={6} fill="#0f407b" stroke="white" strokeWidth={3} />
-                <rect x={cx - 12} y={cy + 50} width={24} height={40} fill="#f0f4ff" rx={4} />
-                <rect
-                    x={cx - 10}
-                    y={cy + 55}
-                    width={20}
-                    height={30}
-                    fill="url(#gradient)"
-                    rx={2}
-                />
-            </g>
-        );
+function getDayName(dateString) {
+    if (!dateString) {
+        return '';
     }
-    return null;
-};
+
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+
+    return dayNames[date.getDay()];
+}
 
 const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
+    if (active && payload && payload.length && payload[0].value != null) {
         return (
             <div style={{
                 background: 'white',
@@ -52,7 +36,32 @@ const CustomTooltip = ({ active, payload }) => {
 
 export default function StatTabs() {
     const [period, setPeriod] = useState('Ugentligt');
-    const [activeExpense, setActiveExpense] = useState('Ons');
+    const [activeExpense, setActiveExpense] = useState('');
+    const [weeklyData, setWeeklyData] = useState([]);
+
+    const chartData = weekOrder.map((day) => {
+        const existingItem = weeklyData.find((item) => item.day === day);
+
+        return existingItem ?? {
+            day,
+            value: null,
+        };
+    });
+
+    useEffect(() => {
+        const fetchWeeklyData = async () => {
+            const data = await getWeeklyEnergyConsumption();
+            const mappedData = data.map((item) => ({
+                ...item,
+                day: getDayName(item.date),
+                value: item.kwh_usage,
+            }));
+
+            setWeeklyData(mappedData);
+            setActiveExpense(mappedData[mappedData.length - 1]?.day ?? '');
+        };
+        fetchWeeklyData();
+    }, []);
 
     return (
         <div className="stat-tabs">
@@ -66,7 +75,7 @@ export default function StatTabs() {
             <div className="stat-tabs__chart">
 
                 <ResponsiveContainer width="100%" height={250}>
-                    <LineChart data={weekData} margin={{ top: 20, right: 20, left: -20, bottom: 5 }}>
+                    <LineChart data={chartData} margin={{ top: 20, right: 20, left: 20, bottom: 5 }}>
                         <defs>
                             <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="0%" stopColor="#0f407b" stopOpacity={0.3} />
@@ -74,9 +83,7 @@ export default function StatTabs() {
                             </linearGradient>
                             <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
                                 <stop offset="0%" stopColor="#0f407b" />
-                                <stop offset="40%" stopColor="#0f407b" />
-                                <stop offset="60%" stopColor="#d1d5db" stopOpacity={0.5} />
-                                <stop offset="100%" stopColor="#d1d5db" stopOpacity={0.3} />
+                                <stop offset="100%" stopColor="#0f407b"  />
                             </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="0" stroke="transparent" />
@@ -84,6 +91,8 @@ export default function StatTabs() {
                             dataKey="day"
                             axisLine={false}
                             tickLine={false}
+                            interval={0}
+                            minTickGap={0}
                             tick={{ fill: '#9ca3af', fontSize: 12 }}
                         />
                         <YAxis hide />
@@ -93,7 +102,6 @@ export default function StatTabs() {
                             dataKey="value"
                             stroke="url(#lineGradient)"
                             strokeWidth={3}
-                            dot={<CustomDot />}
                             activeDot={false}
                         />
                     </LineChart>
@@ -105,9 +113,9 @@ export default function StatTabs() {
                     <h2 className="stat-tabs__title">Udgifter</h2>
                 </div>
                 <div className="stat-tabs__expenses-list">
-                    {weekData.map((item) => (
+                    {weeklyData.map((item) => (
                         <button
-                            key={item.day}
+                            key={item.date}
                             className={`stat-tabs__expense-card ${activeExpense === item.day ? 'active' : ''}`}
                             onClick={() => setActiveExpense(item.day)}
                         >
@@ -118,9 +126,9 @@ export default function StatTabs() {
                             />
                             <div className="stat-tabs__expense-info">
                                 <h3 className="stat-tabs__expense-day">{item.day}</h3>
-                                <p className="stat-tabs__expense-kwh">{item.kwh} kWh</p>
+                                <p className="stat-tabs__expense-kwh">{item.kwh_usage.toFixed(1)} kWh</p>
                             </div>
-                            <span className="stat-tabs__expense-cost">Kr. {item.cost.toFixed(2)}</span>
+                            <span className="stat-tabs__expense-cost">Kr. {item.total_price.toFixed(2)}</span>
                         </button>
                     ))}
                 </div>

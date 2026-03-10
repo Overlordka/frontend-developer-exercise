@@ -1,5 +1,26 @@
 const token = '6291aa27b5e87e3a3495cc2c670960008263d487e8534c1a5147649279d523e3';
 
+function parseDateString(dateString) {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(year, month - 1, day);
+}
+
+function formatDateString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function getStartOfWeek(dateString) {
+    const date = parseDateString(dateString);
+    const daysFromMonday = (date.getDay() + 6) % 7;
+
+    date.setDate(date.getDate() - daysFromMonday);
+
+    return formatDateString(date);
+}
+
 export async function fetchDevices() {
     const response = await fetch('https://exercise.mobicom-pro.com/api/devices', {
         method: 'GET',
@@ -58,4 +79,22 @@ export async function fetchCurrentEnergyConsumption() {
     const energyConsumption = await getEnergyConsumption.json();
 
     return energyConsumption;
+}
+
+export async function getWeeklyEnergyConsumption() {
+    const energyConsumption = await fetchCurrentEnergyConsumption();
+
+    if (!Array.isArray(energyConsumption) || energyConsumption.length === 0) {
+        return [];
+    }
+
+    const sortedEnergyConsumption = [...energyConsumption].sort((firstItem, secondItem) =>
+        firstItem.date.localeCompare(secondItem.date)
+    );
+    const currentDate = sortedEnergyConsumption[sortedEnergyConsumption.length - 1].date;
+    const startOfWeek = getStartOfWeek(currentDate);
+    const weeklyData = sortedEnergyConsumption.filter((item) => item.date >= startOfWeek && item.date <= currentDate);
+
+    console.log('Weekly Energy Consumption:', weeklyData);
+    return weeklyData;
 }
