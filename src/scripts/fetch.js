@@ -56,7 +56,6 @@ export async function fetchCurrentEnergyConsumption() {
     }
 
     const energyConsumption = await getEnergyConsumption.json();
-    console.log(energyConsumption);
-    console.log(currentDate);
-    console.log(currentDateFrom);
+
+    return energyConsumption;
 }
