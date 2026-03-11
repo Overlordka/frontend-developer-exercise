@@ -5,56 +5,73 @@
 2. [Teknologier](#teknologier)
 3. [Projektstruktur](#projektstruktur)
 4. [Komponenter](#komponenter)
-5. [Styling](#styling)
-6. [Routing](#routing)
-7. [Installation og kørsel](#installation-og-kørsel)
-8. [Funktionalitet](#funktionalitet)
+5. [API-integration](#api-integration)
+6. [Routing og navigation](#routing-og-navigation)
+7. [Styling](#styling)
+8. [Installation og kørsel](#installation-og-kørsel)
+9. [Funktionalitet og dataflow](#funktionalitet-og-dataflow)
+10. [Kendte begrænsninger og næste skridt](#kendte-begrænsninger-og-næste-skridt)
 
 ---
 
 ## Projektoversigt
 
-Dette projekt er udviklet som en løsning til Mobicom-Pro's frontend test case. Applikationen er en mobilforberedt smart home kontrolpanel med følgende hovedfunktioner:
+Dette projekt er en mobilforberedt smart home-applikation bygget i React og Vite som løsning på Mobicom-Pro's frontend test case.
 
-- **Dashboard** - Oversigt over energiforbrug, rum og smart indstillinger
-- **Statistik** - Visualisering af energiforbrug og udgifter
-- **Termostat indstillinger** - Kontrol af temperatur, ventilation og driftsmode
+Applikationen består af tre primære views:
 
-### Designkrav
-Projektet er bygget baseret på det tilknyttede Adobe XD design og opfylder følgende krav:
+- **Dashboard** med energiforbrug, rumoversigt og smart controls
+- **Statistik** med ugentlig forbrugsvisning og dagsopdelte udgifter
+- **Indstillinger** med termostat-, ventilations- og modekontrol
+
+Den nuværende implementering kombinerer statisk UI med live data fra test-API'et:
+
+- Dashboardets energikort henter rigtige forbrugsdata
+- Statistiksiden bygger graf og udgiftsliste ud fra API-data
+- Indstillingssiden henter enhedens aktuelle værdier og sender opdateringer tilbage via `PUT`
+- Flere kontrolkort og preset-valg er stadig UI-drevne og fungerer som demo-/prototypeelementer
+
+### Implementerede krav
+
 - Tre navigerbare sider
-- Scrollbar funktionalitet med fast bundmenu
-- Interaktive kontrolelementer
-- Responsivt mobildesign
+- Mobiloptimeret layout med max-bredde container
+- Fast bundnavigation på dashboard og statistik
+- Interaktive kontrolelementer til temperatur, ventilation og mode
+- Integration mod Mobicom-Pro test-API
 
 ---
 
 ## Teknologier
 
 ### Core
-- **React 19.2.0** - UI framework
-- **Vite 7.2.4** - Build tool og development server
-- **React Router DOM 7.13.1** - Client-side routing
 
-### UI & Styling
-- **SCSS** - CSS preprocessor med BEM metodologi
-- **Recharts 3.7.0** - Diagrammer og datavisualisering
-- **React Icons 5.5.0** - Ikoner
+- **React 19.2.0** - Komponentbaseret UI
+- **Vite 7.2.4** - Development server og build tool
+- **React Router DOM 7.13.1** - Klientside-routing
 
-### Development Tools
-- **ESLint** - Code linting
-- **Sass Embedded 1.97.3** - SCSS compiler
+### UI og visualisering
+
+- **SCSS** - Styling via partials og fælles variabler
+- **Recharts 3.7.0** - Grafvisning på statistik-siden
+- **React Icons 5.5.0** - Header- og action-ikoner
+
+### Data og udvikling
+
+- **Fetch API** - HTTP-kald til Mobicom-Pro API
+- **ESLint** - Kodekvalitet og linting
+- **sass-embedded 1.97.3** - SCSS-kompilering
 
 ---
 
 ## Projektstruktur
 
-```
+```text
 frontend-developer-exercise/
+├── documentation.md
 ├── public/
-│   └── icons/              # Alle app ikoner
+│   └── icons/                  # Ikoner brugt i UI'et
 ├── src/
-│   ├── components/         # React komponenter
+│   ├── components/             # Genbrugelige UI-komponenter
 │   │   ├── BottomNav.jsx
 │   │   ├── ConfigIndst.jsx
 │   │   ├── ControlCard.jsx
@@ -66,24 +83,27 @@ frontend-developer-exercise/
 │   │   ├── RoomTabs.jsx
 │   │   ├── SmartSection.jsx
 │   │   └── StatTabs.jsx
-│   ├── pages/              # Side komponenter
+│   ├── pages/                  # Sidekompositioner pr. route
 │   │   ├── starterPage.jsx
 │   │   ├── statistikPage.jsx
 │   │   └── indstillingerPage.jsx
-│   ├── styling/            # SCSS filer
-│   │   ├── _variables.scss
-│   │   ├── _header.scss
-│   │   ├── _energyCard.scss
-│   │   ├── _roomTabs.scss
-│   │   ├── _modeSelector.scss
-│   │   ├── _smartSection.scss
-│   │   ├── _controlCard.scss
+│   ├── scripts/                # API-kald og HTTP-hjælpere
+│   │   ├── fetch.js
+│   │   └── put.js
+│   ├── styling/                # SCSS partials og globale styles
 │   │   ├── _bottomNav.scss
-│   │   ├── _statTabs.scss
 │   │   ├── _ConfigIndst.scss
+│   │   ├── _controlCard.scss
+│   │   ├── _energyCard.scss
+│   │   ├── _header.scss
+│   │   ├── _modeSelector.scss
+│   │   ├── _roomTabs.scss
+│   │   ├── _smartSection.scss
+│   │   ├── _statTabs.scss
+│   │   ├── _variables.scss
 │   │   └── main.scss
-│   ├── App.jsx             # Hovedapplikation med routing
-│   └── main.jsx            # Entry point
+│   ├── App.jsx                 # Route-definition og layoutlogik
+│   └── main.jsx                # App bootstrap
 ├── package.json
 └── vite.config.js
 ```
@@ -92,148 +112,154 @@ frontend-developer-exercise/
 
 ## Komponenter
 
-### Layout Komponenter
+### Layout og navigation
+
+#### `App.jsx`
+
+Ansvarlig for routing og layout på tværs af applikationen.
+
+- Definerer routes for dashboard, statistik og indstillinger
+- Viser kun `BottomNav` på routes, der ikke starter med `/indstillinger`
+- Importerer den globale SCSS entrypoint via `main.scss`
 
 #### `BottomNav.jsx`
-Bundnavigation med fire hovedknapper:
-- Dashboard navigation
-- Statistik navigation
-- Varme kontrol
-- Lys kontrol
 
-**Features:**
-- Dynamisk aktiv tilstand baseret på current route
-- Automatisk ikonskift (active/inactive)
-- React Router integration
+Bundnavigation med fire ikoner.
 
-#### `Header.jsx` / `HeaderIndst.jsx` / `HeaderStatistik.jsx`
-Top header komponenter for forskellige sider med:
-- Tilbage navigation
-- Side titel
-- Indstillinger knap
+- Dashboard-knappen navigerer til `/`
+- Statistik-knappen navigerer til `/statistics`
+- Ikonerne for varme og lys er visuelt til stede, men har ikke navigation koblet på endnu
+- Aktivt ikon skifter afhængigt af den aktuelle route
 
-### Dashboard Komponenter
+#### `Header.jsx`, `HeaderIndst.jsx`, `HeaderStatistik.jsx`
+
+Side-specifikke headers med let forskellig adfærd.
+
+- Dashboard viser hamburger-ikon og titlen `Smart Home`
+- Indstillinger viser tilbageknap til dashboard og titlen `Varme`
+- Statistik viser sidetitel og overflow-ikon
+
+### Dashboard-komponenter
 
 #### `EnergyCard.jsx`
-Viser dagens energiforbrug:
-- Aktuel strømforbrug (kW)
-- Total forbrug for dagen (kWh)
-- Procentvis sammenligning med gårsdagens forbrug
+
+Viser seneste energiforbrug baseret på live API-data.
+
+- Henter data via `fetchCurrentEnergyConsumption()` ved mount
+- Finder seneste og forrige datapunkt for at beregne sammenligning med dagen før
+- Formaterer dato til dansk kortformat
+- Navigerer til statistik-siden ved klik på ikonknappen
+- Fejl logges til konsollen, men vises ikke i UI'et
 
 #### `RoomTabs.jsx`
-Tabulerede rum navigation:
-- Scrollable rum liste
-- Aktiv rum indikator
-- Rum ikoner
+
+Viser en statisk, scroll-bar liste over rum.
+
+- Indeholder rum som soveværelse, stue, badeværelse og køkken
+- Har ingen aktiv filtrering eller datakobling endnu
 
 #### `ModeSelector.jsx`
-Forudindstillede modes:
-- Hjemme mode
-- Ude mode
-- Sover mode
 
-**Features:**
-- State management for aktiv mode
-- Dynamisk ikon skift (on/off)
-- Click handlers
+Lokal state-baseret valg af presets.
+
+- Modes: `Hjemme`, `Ude` og `Sover`
+- Skifter ikon og aktiv styling lokalt i komponenten
+- Er ikke koblet til API eller global state
 
 #### `SmartSection.jsx`
-Grid layout af kontrol kort:
-- Konfigureret gennem `CARDS_CONFIG` array
-- Nem tilføjelse af nye kort
-- Dynamisk rendering
+
+Viser et grid af smart home-kort.
+
+- Henter enhedsdata via `fetchDevices()` ved mount
+- Bruger første enhed fra API'et til at vise temperatur og work mode i stue-kortet
+- Øvrige kort er statiske eksempeldata for lys og varme i andre rum
 
 #### `ControlCard.jsx`
-Genbrugeligt kontrol kort til lys/varme styring:
-- On/off toggle switches
-- Valgfri temperatur visning
-- Indstillinger knap med navigation
-- Support for multiple titler og items
 
-### Statistik Komponenter
+Genbrugelig kortkomponent til lys- og varmestyring.
+
+- Renderer en eller to sektioner med on/off toggles
+- Kan vise temperatur og mode-information
+- Viser `Indstillinger`-knap, når kortet har temperatur/mode-data
+- Navigerer til `/indstillinger` via `useNavigate()`
+
+### Statistik-komponenter
 
 #### `StatTabs.jsx`
-Omfattende statistik visning:
-- **Graf sektion:**
-  - Recharts LineChart
-  - Ugentlige data (Man-Søn)
-  - Gradient linje effekt
-  - Interaktiv tooltip
-  - Custom dot på aktuel dag
-  
-- **Udgifter liste:**
-  - Klikbare expense cards
-  - Dynamisk aktiv tilstand
-  - kWh og pris information
-  - Ikon skift baseret på aktivitet
 
-### Indstillinger Komponenter
+Visualiserer ugentligt energiforbrug og tilhørende udgifter.
+
+- Henter data via `getWeeklyEnergyConsumption()`
+- Mapper API-data til danske ugedagsforkortelser
+- Udfylder ugen i fast rækkefølge `Man-Søn`, også når enkelte dage mangler data
+- Viser interaktiv `LineChart` med tooltip via Recharts
+- Viser klikbar udgiftsliste med aktiv dagsmarkering
+
+### Indstillinger-komponenter
 
 #### `ConfigIndst.jsx`
-Termostat kontrolpanel:
 
-**Temperatur kontrol:**
-- +/- knapper for præcis justering
-- Range slider (10-30°C)
-- Stor display af aktuel temperatur
-- Ude/inde temperatur visning
+Termostat- og ventilationskontrol baseret på live enhedsdata.
 
-**Ventilator kontrol:**
-- 5-niveau bar indikator
-- Range slider kontrol
-- Visuel feedback
-
-**Mode vælger:**
-- Manuel mode
-- Tidsplan mode
-- Boost mode
-- Aktiv tilstand highlighting
-
-**Power kontrol:**
-- On/off toggle knap
-- Visuel tilstandsindikator
+- Henter enhedslisten via `fetchDevices()` ved mount
+- Bruger første device som aktiv enhed
+- Initialiserer navn, indetemperatur, target-temperatur, ventilationsniveau og mode fra API'et
+- Sender `PUT`-opdateringer via `updateDevice()` ved ændring af temperatur, ventilation og mode
+- Temperatur slider og plus/minus-knapper er begrænset til intervallet `10-30°C`
+- Ventilation er begrænset til niveau `0-5`
+- Power-knappen ændrer kun lokal UI-state og er ikke persisteret til API'et
 
 ---
 
-## Styling
+## API-integration
 
-### BEM Metodologi
-Alle komponenter følger BEM (Block Element Modifier) naming convention:
-```scss
-.component-name { }
-.component-name__element { }
-.component-name__element--modifier { }
-```
+Al netværkslogik er samlet i `src/scripts`.
 
-### SCSS Variabler (_variables.scss)
-Centraliserede design tokens:
-```scss
-$primary-blue: #0f407b;
-$primary-white: #ffffff;
-$primary-text: #1a1a1a;
-$primary-dark-grey: #6b7280;
-$primary-light-grey: #e5e7eb;
-$primary-background: #f8f9fc;
-```
+### `src/scripts/fetch.js`
 
-### Responsive Design
-- Mobile-first approach
-- Max-width container (420px)
-- Flexbox og Grid layouts
-- Touch-friendly kontrolelementer
+Indeholder læseoperationer mod API'et.
 
-### Animationer
-- Smooth transitions på hover/active states
-- Transform effekter på knapper
-- Color transitions
-- Scale animations
+- `fetchDevices()`
+  - `GET /api/devices`
+  - Bruges af `SmartSection` og `ConfigIndst`
+
+- `fetchCurrentEnergyConsumption()`
+  - `GET /api/weather` for at finde aktuel dato
+  - `GET /api/statistics?device_id=38&from=...&to=...`
+  - Bruges af `EnergyCard`
+
+- `getWeeklyEnergyConsumption()`
+  - Genbruger `fetchCurrentEnergyConsumption()`
+  - Beregner start på uge fra seneste tilgængelige dato
+  - Filtrerer datasættet ned til den aktuelle uge
+  - Bruges af `StatTabs`
+
+### `src/scripts/put.js`
+
+Indeholder skriveoperationer mod API'et.
+
+- `updateDevice(deviceId, payload)`
+  - `PUT /api/devices/:id`
+  - Bruges af `ConfigIndst` til opdatering af device-indstillinger
+
+### Nuværende databrug i UI'et
+
+- **Live data:** energiforbrug, ugestatistik, enhedsnavn, indetemperatur, target-temperatur, ventilationsniveau og work mode ved indlæsning
+- **Lokal/demo data:** rumliste, preset-knapper, de fleste control cards, power-toggle i indstillinger og bundnavigationens varme-/lysgenveje
+
+### Fejlhåndtering
+
+- API-fejl kaster exceptions i scriptlaget
+- Komponenterne logger som udgangspunkt fejl til konsollen
+- Der er endnu ingen loading states eller brugerrettede fejlbeskeder
 
 ---
 
-## Routing
+## Routing og navigation
 
-### Routes Konfiguration
-```javascript
+### Routes
+
+```jsx
 <Routes>
   <Route path="/" element={<StarterPage />} />
   <Route path="/statistics" element={<StatistikPage />} />
@@ -241,119 +267,140 @@ $primary-background: #f8f9fc;
 </Routes>
 ```
 
-### Navigation Flow
-1. **Dashboard (/)** → Hovedside med oversigt
-2. **Statistik (/statistics)** → Energiforbrug og udgifter
-3. **Indstillinger (/indstillinger)** → Termostat kontrol
+### Navigationsflow
 
-Navigation håndteres via:
-- `useNavigate()` hook for programmatisk navigation
-- `useLocation()` hook for aktiv route detection
+1. **Dashboard (`/`)** er applikationens startside
+2. **Statistik (`/statistics`)** kan åbnes via bundnavigation eller energikortet
+3. **Indstillinger (`/indstillinger`)** åbnes fra varme-kortets `Indstillinger`-knap
+4. Tilbage-navigation fra indstillinger går til dashboard via headerens tilbageknap
+
+### Route-afhængig UI-logik
+
+- `BottomNav` vises på dashboard og statistik
+- `BottomNav` skjules på indstillingssiden for at give mere plads til termostatpanelet
+- Aktiv route bruges til at skifte bundnavigationens ikon-tilstand
+
+---
+
+## Styling
+
+Projektet bruger SCSS partials organiseret pr. komponent og samlet i `src/styling/main.scss`.
+
+### Overordnet stylingstruktur
+
+- Hver større komponent har sin egen partial, f.eks. `_energyCard.scss` og `_statTabs.scss`
+- `main.scss` importerer alle partials og de fælles variabler
+- Layoutet er mobile-first med en central container på `max-width: 420px`
+
+### Centrale designvariabler
+
+```scss
+$primary-blue: #0f407b;
+$primary-white: #ffffff;
+$primary-background: #fafafa;
+$primary-grey: #cbccd2;
+$primary-dark-grey: #a0a0a0;
+$primary-text: #1a1a1a;
+$green: #71ddb3;
+```
+
+### Stylingmønstre
+
+- BEM-inspireret class naming i størstedelen af komponenterne
+- Flexbox og grid bruges til layout af kort, faner og bundnavigation
+- Ikon- og state-skift håndteres primært via class names og forskellige billedfiler
 
 ---
 
 ## Installation og kørsel
 
 ### Forudsætninger
-- Node.js (v16+)
-- npm eller yarn
+
+- Node.js `20.19+` eller nyere anbefales til Vite 7
+- npm
 
 ### Installation
+
 ```bash
-# Clone repository
 git clone [repository-url]
-
-# Naviger til projekt
 cd frontend-developer-exercise
-
-# Installer dependencies
 npm install
 ```
 
 ### Development
-```bash
-# Start development server
-npm run dev
 
-# Åben browser på http://localhost:5173
+```bash
+npm run dev
 ```
 
-### Build
-```bash
-# Byg til produktion
-npm run build
+Vite starter som standard på `http://localhost:5173`.
 
-# Preview production build
+### Build og preview
+
+```bash
+npm run build
 npm run preview
 ```
 
 ### Linting
+
 ```bash
 npm run lint
 ```
 
 ---
 
-## Funktionalitet
+## Funktionalitet og dataflow
 
-### State Management
-Komponenterne bruger React hooks til state management:
-- `useState` - Lokal komponent state
-- `useNavigate` - Navigation state
-- `useLocation` - Route information
+### Brugte React hooks
 
-### Interaktive Features
+- `useState` til lokal komponentstate
+- `useEffect` til initial datahentning
+- `useNavigate` til programmatisk navigation
+- `useLocation` til route-afhængig UI-logik
 
-#### Dashboard
-- ✅ Scrollable interface
-- ✅ Fast bundmenu
-- ✅ Room navigation
-- ✅ Mode selection
-- ✅ Smart controls toggle
+### Overordnet dataflow
 
-#### Statistik
-- ✅ Ugentlig forbrugsvisning
-- ✅ Interaktiv graf med tooltip
-- ✅ Expense tracking per dag
-- ✅ Aktiv dag selektion
+1. API-kald ligger i `src/scripts/fetch.js` og `src/scripts/put.js`
+2. Feature-komponenter kalder scriptlaget i `useEffect` eller event handlers
+3. Resultater gemmes i lokal state via `useState`
+4. UI opdateres direkte ud fra komponenternes state
 
-#### Termostat
-- ✅ Temperatur justering (10-30°C)
-- ✅ Ventilator kontrol (0-5 niveau)
-- ✅ Mode selektion (Manuel/Tidsplan/Boost)
-- ✅ On/off power kontrol
-- ✅ Real-time feedback
+### Dashboard
 
-### Data Flow
-- Komponent props for data passing
-- Centraliserede konfigurationer (f.eks. CARDS_CONFIG)
-- Event handlers for bruger interaktioner
+- Viser live energiforbrug med sammenligning mod forrige dag
+- Viser rum og presets som lokal UI uden backend-kobling
+- Viser smart controls, hvor stuevarme er delvist drevet af device-data fra API'et
 
----
+### Statistik
 
-## Fremtidige Forbedringer
+- Bygger ugentlig graf ud fra live statistikdata
+- Viser dagsopdelte udgifter med klikbar aktiv markering
+- Periodeselektoren er visuelt til stede, men skifter ikke datasæt endnu
 
-### Potentielle udvidelser:
-1. **API Integration** - Brug test-api fra exercise.mobicom-pro.com
-2. **Persistent State** - LocalStorage/SessionStorage
-3. **Real-time Updates** - WebSocket forbindelse
-4. **Animations** - Framer Motion integration
-5. **Accessibility** - ARIA labels og keyboard navigation
-6. **Testing** - Unit og integration tests
-7. **i18n** - Flersproget support
-8. **Dark Mode** - Tema switching
-9. **PWA** - Progressive Web App funktionalitet
-10. **Performance** - Code splitting og lazy loading
+### Indstillinger
+
+- Indlæser første device fra API'et som aktiv termostat
+- Opdaterer temperatur og ventilationsniveau via `PUT`
+- Har mode-knapper med API-opkald ved ændring
+- Har power-toggle som kun påvirker lokal state i UI'et
 
 ---
 
-## Kontakt
+## Kendte begrænsninger og næste skridt
 
-Dette projekt er udviklet som en del af Mobicom-Pro's frontend test case.
+### Nuværende begrænsninger
 
-For spørgsmål eller feedback, kontakt venligst:
-**ar@mobicom-pro.com**
+- Flere dele af dashboardet er stadig statiske demo-data
+- Der findes ingen loading state eller brugerrettet fejlvisning
+- Autentificeringstoken ligger direkte i kildekoden i scriptlaget
+- Bundnavigationens varme- og lysikoner er ikke koblet til routes eller handlinger
+- Power-knappen i indstillinger er ikke synkroniseret med API'et
 
----
+### Relevante næste forbedringer
 
-**Udviklet med ❤️ og React**
+1. Flyt API-token til miljøvariabler
+2. Tilføj loading og fejltilstande i de dataafhængige komponenter
+3. Kobl flere rum- og kontrolkort til rigtige device-data
+4. Gør preset-valg og power-state persistente
+5. Tilføj tests for API-flow og navigation
